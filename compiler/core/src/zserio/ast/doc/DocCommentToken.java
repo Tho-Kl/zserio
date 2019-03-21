@@ -3,22 +3,21 @@ package zserio.ast.doc;
 import java.util.ArrayList;
 import java.util.List;
 
-import zserio.antlr.DocCommentParserTokenTypes;
-import zserio.antlr.util.BaseTokenAST;
 import zserio.antlr.util.ParserException;
 import zserio.ast.ZserioType;
+import zserio.ast.doc.DocParagraphToken.DocParagraphTokenText;
 
 /**
  * Implements the root AST token for documentation comment.
  */
-public class DocCommentToken extends DocTokenAST
+public class DocCommentToken
 {
     /**
      * Gets list of documentation paragraph tokens.
      *
      * @return List of documentation paragraph tokens.
      */
-    public Iterable<DocParagraphToken> getParagraphList()
+    public List<DocParagraphToken> getParagraphList()
     {
         return paragraphList;
     }
@@ -33,33 +32,29 @@ public class DocCommentToken extends DocTokenAST
         return isDeprecated;
     }
 
-    @Override
-    protected boolean evaluateChild(BaseTokenAST child) throws ParserException
-    {
-        switch (child.getType())
-        {
-        case DocCommentParserTokenTypes.DOC_PARAGRAPH:
-            if (!(child instanceof DocParagraphToken))
-                return false;
-            paragraphList.add((DocParagraphToken)child);
-            break;
-
-        default:
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    protected void check(ZserioType owner) throws ParserException
+    public void check(ZserioType owner) throws ParserException
     {
         for (DocParagraphToken paragraph : paragraphList)
-            if (paragraph.isDeprecated())
-                isDeprecated = true;
+        {
+            for (DocTagSeeToken seeTag : paragraph.getTagSeeList())
+            {
+                seeTag.check(owner);
+            }
+
+            for (DocParagraphTokenText paragraphText : paragraph.getParagraphTextList())
+            {
+                for (DocTagSeeToken seeTag : paragraphText.getTagSeeList())
+                {
+                    seeTag.check(owner);
+                }
+            }
+        }
     }
 
-    private static final long serialVersionUID = 1L;
+    protected void addParagraph(DocParagraphToken docParagraph)
+    {
+        paragraphList.add(docParagraph);
+    }
 
     private final List<DocParagraphToken> paragraphList = new ArrayList<DocParagraphToken>();
     private boolean isDeprecated;

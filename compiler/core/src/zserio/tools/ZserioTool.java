@@ -136,7 +136,7 @@ public class ZserioTool
             final TokenAST rootToken = parseComment(commandLineArguments.getDocCommentFileName(),
                     ZserioParserTokenTypes.DOC_COMMENT);
             rootToken.evaluateHiddenDocComment(null);
-            showAstTree(rootToken.getHiddenDocComment());
+            //showAstTree(rootToken.getHiddenDocComment());
         }
         else if (commandLineArguments.getInputFileName() == null)
         {

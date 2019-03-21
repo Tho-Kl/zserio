@@ -1,17 +1,12 @@
 package zserio.ast.doc;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import zserio.antlr.DocCommentParserTokenTypes;
-import zserio.antlr.util.BaseTokenAST;
-import zserio.antlr.util.ParserException;
 
 /**
  * Implements AST token for type DOC_PARAGRAPH.
  */
-public class DocParagraphToken extends DocTokenAST
+public class DocParagraphToken
 {
     /**
      * Gets the list of paragraph texts stored in paragraph.
@@ -66,7 +61,7 @@ public class DocParagraphToken extends DocTokenAST
     /**
      * Helper class to store list of texts and see tags stored in the one paragraph token.
      */
-    public static class DocParagraphTokenText implements Serializable
+    public static class DocParagraphTokenText
     {
         /**
          * Constructor.
@@ -130,77 +125,57 @@ public class DocParagraphToken extends DocTokenAST
             return tagSeeList;
         }
 
-        private static final long serialVersionUID = 1L;
-
         private final List<String>          textList;
         private final List<DocTagSeeToken>  tagSeeList;
     }
 
-    @Override
-    protected boolean evaluateChild(BaseTokenAST child) throws ParserException
+    protected void addText(String text)
     {
-        switch (child.getType())
+        if (docParagraphTextList.isEmpty())
         {
-        case DocCommentParserTokenTypes.DOC_TEXT:
-            final String text = child.getText();
-            if (docParagraphTextList.isEmpty())
-            {
-                docParagraphTextList.add(new DocParagraphTokenText(text));
-            }
-            else
-            {
-                final DocParagraphTokenText last = docParagraphTextList.get(docParagraphTextList.size() - 1);
-                if (last.isTagSeeListEmpty())
-                    last.addText(text);
-                else
-                    docParagraphTextList.add(new DocParagraphTokenText(text));
-            }
-            wasText = true;
-            break;
-
-        case DocCommentParserTokenTypes.DOC_TAG_SEE:
-            if (!(child instanceof DocTagSeeToken))
-                return false;
-
-            final DocTagSeeToken seeToken = (DocTagSeeToken)child;
-            if (wasText)
-            {
-                final DocParagraphTokenText last = docParagraphTextList.get(docParagraphTextList.size() - 1);
-                last.addTagSee(seeToken);
-            }
-            else
-            {
-                docTagSeeList.add(seeToken);
-            }
-            break;
-
-        case DocCommentParserTokenTypes.DOC_TAG_PARAM:
-            if (!(child instanceof DocTagParamToken))
-                return false;
-            docTagParamList.add((DocTagParamToken)child);
-            wasText = false;
-            break;
-
-        case DocCommentParserTokenTypes.DOC_TAG_TODO:
-            if (!(child instanceof DocTagTodoToken))
-                return false;
-            docTagTodoList.add((DocTagTodoToken)child);
-            wasText = false;
-            break;
-
-        case DocCommentParserTokenTypes.DOC_TAG_DEPRECATED:
-            isDeprecated = true;
-            wasText = false;
-            break;
-
-        default:
-            return false;
+            docParagraphTextList.add(new DocParagraphTokenText(text));
         }
-
-        return true;
+        else
+        {
+            final DocParagraphTokenText last = docParagraphTextList.get(docParagraphTextList.size() - 1);
+            if (last.isTagSeeListEmpty())
+                last.addText(text);
+            else
+                docParagraphTextList.add(new DocParagraphTokenText(text));
+        }
+        wasText = true;
     }
 
-    private static final long serialVersionUID = 1L;
+    protected void addSeeTag(DocTagSeeToken seeTag)
+    {
+        if (wasText)
+        {
+            final DocParagraphTokenText last = docParagraphTextList.get(docParagraphTextList.size() - 1);
+            last.addTagSee(seeTag);
+        }
+        else
+        {
+            docTagSeeList.add(seeTag);
+        }
+    }
+
+    protected void addParamTag(DocTagParamToken paramTag)
+    {
+        docTagParamList.add(paramTag);
+        wasText = false;
+    }
+
+    protected void addTodoTag(DocTagTodoToken todoTag)
+    {
+        docTagTodoList.add(todoTag);
+        wasText = false;
+    }
+
+    protected void setDeprecated()
+    {
+        isDeprecated = true;
+        wasText = false;
+    }
 
     private final List<DocParagraphTokenText> docParagraphTextList = new ArrayList<DocParagraphTokenText>();
     private final List<DocTagSeeToken> docTagSeeList = new ArrayList<DocTagSeeToken>();

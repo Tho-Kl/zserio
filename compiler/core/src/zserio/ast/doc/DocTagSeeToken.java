@@ -1,33 +1,20 @@
 package zserio.ast.doc;
 
-import zserio.antlr.util.BaseTokenAST;
 import zserio.antlr.util.ParserException;
 import zserio.ast.SymbolReference;
+import zserio.ast.TokenAST;
 import zserio.ast.ZserioType;
 
 /**
  * Implements AST token for type DOC_TAG_SEE.
  */
-public class DocTagSeeToken extends DocTokenAST
+public class DocTagSeeToken
 {
-    @Override
-    public void evaluate() throws ParserException
+    DocTagSeeToken(String alias, String name)
     {
-        String linkName = null;
-        final String tokenText = getText();
-        final String[] parameterList = tokenText.split("\"");
-        for (String parameter : parameterList)
-        {
-            if (!parameter.isEmpty())
-            {
-                // link alias is the same as a link name if no alias is available
-                if (linkAlias == null)
-                    linkAlias = parameter;
-                linkName = parameter;
-            }
-        }
-
-        linkSymbolReference = new SymbolReference(this, linkName);
+        // link alias is the same as a link name if no alias is available
+        linkAlias = alias.isEmpty() ? name : alias;
+        linkSymbolReference = new SymbolReference(new TokenAST(), name); // TODO: fake token
     }
 
     /**
@@ -50,20 +37,10 @@ public class DocTagSeeToken extends DocTokenAST
         return linkSymbolReference;
     }
 
-    @Override
-    protected boolean evaluateChild(BaseTokenAST child) throws ParserException
-    {
-        // no children
-        return false;
-    }
-
-    @Override
     protected void check(ZserioType owner) throws ParserException
     {
         linkSymbolReference.check(owner);
     }
-
-    private static final long serialVersionUID = 1L;
 
     private String linkAlias = null;
     private SymbolReference linkSymbolReference;

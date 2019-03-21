@@ -3,19 +3,15 @@ package zserio.ast.doc;
 import java.util.ArrayList;
 import java.util.List;
 
-import zserio.antlr.DocCommentParserTokenTypes;
-import zserio.antlr.util.BaseTokenAST;
-import zserio.antlr.util.ParserException;
-
 /**
  * Implements AST token for type DOC_TAG_PARAM.
  */
-public class DocTagParamToken extends DocTokenAST
+public class DocTagParamToken
 {
-    @Override
-    public void evaluate() throws ParserException
+    DocTagParamToken(String paramName, String text)
     {
-        paramName = getText();
+        this.paramName = paramName;
+        paramDescriptionList.add(text);
     }
 
     /**
@@ -37,24 +33,6 @@ public class DocTagParamToken extends DocTokenAST
     {
         return paramDescriptionList;
     }
-
-    @Override
-    protected boolean evaluateChild(BaseTokenAST child) throws ParserException
-    {
-        switch (child.getType())
-        {
-        case DocCommentParserTokenTypes.DOC_TEXT:
-            paramDescriptionList.add(child.getText());
-            break;
-
-        default:
-            return false;
-        }
-
-        return true;
-    }
-
-    private static final long serialVersionUID = 1L;
 
     private String paramName;
     private final List<String> paramDescriptionList = new ArrayList<String>();

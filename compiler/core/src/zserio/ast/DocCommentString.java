@@ -1,19 +1,17 @@
 package zserio.ast;
 
-import java.io.StringReader;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import antlr.CommonHiddenStreamToken;
-import antlr.RecognitionException;
-import antlr.Token;
-import antlr.TokenStreamException;
-import antlr.TokenStreamRecognitionException;
-
 import zserio.antlr.DocCommentLexer;
 import zserio.antlr.DocCommentParser;
-import zserio.antlr.util.FileNameLexerToken;
 import zserio.antlr.util.ParserException;
+import zserio.ast.doc.DocCommentListener;
 import zserio.ast.doc.DocCommentToken;
-import zserio.ast.doc.DocTokenAST;
 
 /**
  * The representation of AST node type DOC_COMMENT.
@@ -51,7 +49,16 @@ public class DocCommentString extends TokenAST
     @Override
     protected void evaluate() throws ParserException
     {
-        final int commentLexerTokenLine = getLine();
+        final CharStream inputStream = CharStreams.fromString(getText());
+        final DocCommentLexer docLexer = new DocCommentLexer(inputStream);
+        final DocCommentParser docParser = new DocCommentParser(new CommonTokenStream(docLexer));
+        final DocCommentListener docListener = new DocCommentListener();
+        final ParseTree docTree = docParser.docComment();
+        ParseTreeWalker.DEFAULT.walk(docListener, docTree);
+
+        docCommentToken = docListener.getDocComment();
+
+        /*final int commentLexerTokenLine = getLine();
         final int baseLineNumber = (commentLexerTokenLine > 0) ? commentLexerTokenLine - 1 : 0;
         final StringReader inputString = new StringReader(getText());
         final DocCommentLexer docLexer = new DocCommentLexerWithFileNameSupport(inputString, baseLineNumber);
@@ -82,16 +89,16 @@ public class DocCommentString extends TokenAST
         }
 
         docCommentToken = (DocCommentToken)docParser.getAST();
-        docCommentToken.evaluateAll();
+        docCommentToken.evaluateAll();*/
     }
 
     @Override
     protected void check() throws ParserException
     {
-        docCommentToken.checkAll(owner);
+        docCommentToken.check(owner);
     }
 
-    private static class DocCommentLexerWithFileNameSupport extends DocCommentLexer
+    /*private static class DocCommentLexerWithFileNameSupport extends DocCommentLexer
     {
         DocCommentLexerWithFileNameSupport(StringReader reader, int baseLineNumber)
         {
@@ -116,7 +123,7 @@ public class DocCommentString extends TokenAST
         }
 
         private final int baseLineNumber;
-    }
+    }*/
 
     private static final long serialVersionUID = -1L;
 

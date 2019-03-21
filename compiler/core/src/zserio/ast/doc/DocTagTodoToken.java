@@ -3,15 +3,16 @@ package zserio.ast.doc;
 import java.util.ArrayList;
 import java.util.List;
 
-import zserio.antlr.DocCommentParserTokenTypes;
-import zserio.antlr.util.BaseTokenAST;
-import zserio.antlr.util.ParserException;
-
 /**
  * Implements AST token for type DOC_TAG_TODO.
  */
-public class DocTagTodoToken extends DocTokenAST
+public class DocTagTodoToken
 {
+    public DocTagTodoToken(String todoText)
+    {
+        todoTextList.add(todoText);
+    }
+
     /**
      * Gets list of text rows which describes the todo tag.
      *
@@ -21,24 +22,6 @@ public class DocTagTodoToken extends DocTokenAST
     {
         return todoTextList;
     }
-
-    @Override
-    protected boolean evaluateChild(BaseTokenAST child) throws ParserException
-    {
-        switch (child.getType())
-        {
-        case DocCommentParserTokenTypes.DOC_TEXT:
-            todoTextList.add(child.getText());
-            break;
-
-        default:
-            return false;
-        }
-
-        return true;
-    }
-
-    private static final long serialVersionUID = 1L;
 
     private final List<String> todoTextList = new ArrayList<String>();
 }
